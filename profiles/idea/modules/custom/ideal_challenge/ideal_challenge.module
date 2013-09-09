@@ -62,7 +62,8 @@ function theme_ideal_challenge_add_idea() {
     $challenge = views_embed_view('default_challenge', 'block', $challenge_nid);
     $form = drupal_get_form('ideal_challenge_add_idea_form');
 
-    $output .= $challenge; 
+    $output .= $challenge;
+    //$output .= '<h4 class="ideal-challenge-add-idea">' . t('Be bold! Add your idea:') . '</h4>';
     $output .= render($form);
   }
   return $output;
@@ -73,6 +74,10 @@ function theme_ideal_challenge_add_idea() {
  */
 function ideal_challenge_add_idea_form() {
   $form = array();
+  
+  $form['header'] = array(
+    '#markup' => '<h4 class="ideal-challenge-add-idea">' . t('Be bold! Add your idea:') . '</h4>',
+  );
    
   $form['title'] = array(
     '#type' => 'textfield',
