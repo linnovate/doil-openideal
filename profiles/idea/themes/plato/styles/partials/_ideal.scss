@@ -5,32 +5,23 @@
 @import "ideal/head-to-head";
 @import "ideal/front-columns";
 @font-face {
-  font-family: 'Alef';
-  src: url('../Alef.eot');
-  src: url('../Alef.eot?#iefix')
-       format('embedded-opentype'),
-       url('../Alef.woff') format('woff'),
-       url('../Alef.ttf') format('truetype'),
-       url('../Alef.svg#webfont') format('svg');
-}
-@font-face {
     font-family: 'Alef';
-    src: url('../Alef/Alef-Webfont/Alef-bold.eot');
-    src: url('../Alef/Alef-Webfont/Alef-bold.eot?#iefix') format('embedded-opentype'),
-         url('../Alef/Alef-Webfont/Alef-bold.woff') format('woff'),
-         url('../Alef/Alef-Webfont/Alef-bold.ttf') format('truetype'),
-         url('../Alef/Alef-Webfont/Alef-bold.svg#alefbold') format('svg');
+    src: url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-bold.eot');
+    src: url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-bold.eot?#iefix') format('embedded-opentype'),
+         url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-bold.woff') format('woff'),
+         url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-bold.ttf') format('truetype'),
+         url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-bold.svg#alefbold') format('svg');
     font-weight: bold;
     font-style: normal;
 
 }
 @font-face {
     font-family: 'Alef';
-    src: url('../Alef/Alef-Webfont/Alef-regular.eot');
-    src: url('../Alef/Alef-Webfont/Alef-regular.eot?#iefix') format('embedded-opentype'),
-         url('../Alef/Alef-Webfont/Alef-regular.woff') format('woff'),
-         url('../Alef/Alef-Webfont/Alef-regular.ttf') format('truetype'),
-         url('../Alef/Alef-Webfont/Alef-regular.svg#alefregular') format('svg');
+    src: url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-regular.eot');
+    src: url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-regular.eot?#iefix') format('embedded-opentype'),
+         url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-regular.woff') format('woff'),
+         url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-regular.ttf') format('truetype'),
+         url('http://ideas.drupal.org.il/profiles/idea/themes/plato/Alef/Alef-Webfont/Alef-regular.svg#alefregular') format('svg');
     font-weight: normal;
     font-style: normal;
 }
