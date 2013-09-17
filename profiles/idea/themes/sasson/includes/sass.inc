@@ -9,6 +9,13 @@
  *  Helper function for sass integration.
  */
 function sasson_sass_render() {
+
+  if (!empty($_GET['recompile']) && $_GET['recompile'] == true && user_access('administer themes')) {
+    cache_clear_all('sasson', 'cache_page', TRUE);
+    drupal_set_message(t('Sass files have been recompiled.'));
+    drupal_goto($_GET['q']);
+  }
+
   $element = array(
     '#items' => drupal_add_css(),
   );
@@ -74,7 +81,8 @@ function sasson_pre_render($elements) {
     $last = end($parts);
     $fparts = explode(".", $last);
     $name = reset($fparts);
-    $directory = 'public://css';
+    $files_directory = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/css';
+    $directory = theme_get_setting('sasson_compiler_destination') ? theme_get_setting('sasson_compiler_destination') . '/' . $file['theme'] . '/styles' : $files_directory;
     $path = $directory . '/' . $name . '.css';
     $theme_name = $parts[array_search('themes', $parts)+1];
     $cid = 'sasson:css:' . $theme_name . ':' . $name;
@@ -117,13 +125,15 @@ function sasson_pick_files($items) {
   $files = array();
   foreach ($items as $key => $file) {
     if ($file['type'] == 'file') {
-      $extension = drupal_substr($file['data'], -5);
-      if (in_array($extension, array('.scss', '.sass'))) {
-        $file['syntax'] = $extension == '.scss' ? 'scss' : 'sass';
+      $extension = drupal_substr($file['data'], -4);
+      if (in_array($extension, array('scss', 'sass'))) {
+        $file['syntax'] = $extension == 'scss' ? 'scss' : 'sass';
         $file['recompile'] = isset($file['recompile']) ? $file['recompile'] : FALSE;
-        // If the file is set to recompile on every page load then we don't want
-        // it to be aggregated.
-        $file['preprocess'] = !empty($file['recompile']) ? FALSE : $file['preprocess'];
+        // If the file is set to recompile on every page load then we don't want it
+        // to be aggregated, this will also put them in a <link> tag while developing.
+        if (theme_get_setting('sasson_devel') || $file['recompile']) {
+          $file['preprocess'] = FALSE;
+        }
         $files[$key] = $file;
       }
     }
@@ -135,15 +145,13 @@ function sasson_pick_files($items) {
  * Loads a stylesheet and writes the base path to all url declarations.
  *
  * @param $file
- *   A filepath or an array representing a stylesheet.
+ *   A filepath.
  *
  * @return
  *   A string that represents the processed contents of the stylesheet.
  */
 function sasson_load_stylesheet($file) {
-  $file = is_array($file) ? $file['data'] : $file;
-  //$data = drupal_load_stylesheet($file); // this removes @import statements
-  $data =  @file_get_contents($file);
+  $data = file_get_contents($file);
   // Build the base URL of this CSS file. Start with the full URL.
   $base = file_create_url($file);
   // Move to the parent.
@@ -154,9 +162,11 @@ function sasson_load_stylesheet($file) {
     $base = substr($base, strlen($GLOBALS['base_root']));
   }
   _drupal_build_css_path(NULL, $base . '/');
-  // Anchor all paths in the CSS with its base URL, ignoring external, absolute
-  // paths, and compass url helper functions.
-  $data = preg_replace_callback('/(?<!-)url\(\s*[\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\s*\)/i', '_drupal_build_css_path', $data);
+  if (theme_get_setting('sasson_url_rewrite')) {
+    // Anchor all paths in the CSS with its base URL, ignoring external, absolute
+    // paths, and compass url helper functions.
+    $data = preg_replace_callback('/(?<!-)url\(\s*[\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\s*\)/i', '_drupal_build_css_path', $data);
+  }
   // Quote all url(..) to ensure PhamlP doesn't strip them.
   $data = preg_replace("/url\(([^'\")]+)\)/i", "url('$1')", $data);
   return $data;
@@ -198,7 +208,10 @@ function sasson_parse($data, $file, $syntax, $theme_name) {
     // Prepare vendor prefixes array
     // @see hook_prefixes_alter().
     $pref = array();
-    drupal_alter('prefixes', $pref);
+    
+    if (theme_get_setting('sasson_prefix')) {
+      drupal_alter('prefixes', $pref);
+    }
 
     // Execute the compiler.
     $options = array(

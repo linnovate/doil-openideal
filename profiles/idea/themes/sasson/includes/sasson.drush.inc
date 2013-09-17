@@ -56,14 +56,19 @@ function drush_sasson_new_subtheme($name = NULL, $machine_name = NULL) {
     return;
   }
 
-  $sasson_path = drush_locate_root() . '/' . drupal_get_path('theme', 'sasson');
+  // Find Drupal install and sasson paths 
+  $root_path = drush_locate_root();
+  $sasson_relative = drupal_get_path('theme', 'sasson');
 
-  // From Sasson's location, we move up one directory and construct the path where
-  // our sub theme will be created.
-  $_sasson_path = explode('/', $sasson_path);
-  array_pop($_sasson_path);
-  $theme_dir = implode('/', $_sasson_path);
-  $subtheme_path = $theme_dir . '/' . $machine_name;
+  // Construct relative path for new subtheme config
+  $_sasson_relative = explode('/', $sasson_relative);
+  array_pop($_sasson_relative);
+  $themes_relative = implode('/', $_sasson_relative);
+  $subtheme_relative = $themes_relative . '/' . $machine_name;
+
+  // Construct absolute paths for copying
+  $sasson_path = $root_path  . '/' . $sasson_relative; 
+  $subtheme_path = $root_path . '/' . $subtheme_relative;
 
   // Make a fresh copy of the original starter kit.
   $s = drush_copy_dir("$sasson_path/SUBTHEME/", $subtheme_path);
@@ -77,7 +82,9 @@ function drush_sasson_new_subtheme($name = NULL, $machine_name = NULL) {
   drush_op('rename', "$subtheme_path/scripts/SUBTHEME.js", "$subtheme_path/scripts/$machine_name.js");
   drush_op('rename', "$subtheme_path/images/SUBTHEME.png", "$subtheme_path/images/$machine_name.png");
   drush_op('sasson_file_str_replace', "$subtheme_path/$machine_name.info", ', <strong>you shouldn\'t enable this starterkit</strong>. instead, use <em>drush sns</em> or manually copy it to create a new sub-theme, check out the <a href="http://www.linnovate.net/blog/sasson-smart-drupal-theming">docs</a> or the README.txt for more info', "");
+  drush_op('sasson_file_str_replace', "$subtheme_path/$machine_name.info", 'sites/all/themes/SUBTHEME', "$subtheme_relative");
   drush_op('sasson_file_str_replace', "$subtheme_path/$machine_name.info", 'SUBTHEME', "$machine_name");
+  drush_op('sasson_file_str_replace', "$subtheme_path/template.php", 'SUBTHEME', "$machine_name");
   drush_op('sasson_file_str_replace', "$subtheme_path/$machine_name.info", 'Starterkit', "$name");
 
   // Notify user of the newly created theme.
@@ -88,7 +95,7 @@ function drush_sasson_new_subtheme($name = NULL, $machine_name = NULL) {
     )
   ));
 
-  drush_pm_enable($machine_name);
+  drush_invoke_process("@self", "pm-enable", array($machine_name));
 
   if (drush_confirm(dt("\nWould you like to set !name as your default theme?", array('!name' => $name)))) {
     drush_op('variable_set', 'theme_default', $machine_name);

@@ -29,8 +29,40 @@ if (theme_get_setting('sasson_sass')) {
 function sasson_css_alter(&$css) {
   global $language;
 
-  foreach ($css as $data => $item) {
-    // Only provide overrides for files.
+  foreach ($css as $data => &$item) {
+
+    // The CSS_SYSTEM aggregation group doesn't make any sense. Therefore, we are
+    // pre-pending it to the CSS_DEFAULT group. This has the same effect as giving
+    // it a separate (low-weighted) group but also allows it to be aggregated
+    // together with the rest of the CSS.
+    if ($item['group'] == CSS_SYSTEM) {
+      $item['group'] = CSS_DEFAULT;
+      $item['weight'] = $item['weight'] - 100;
+    }
+
+    // Add the Sass syntax to the item options
+    $extension = drupal_substr($data, -4);
+    if (in_array($extension, array('scss', 'sass'))) {
+      $item['syntax'] = $extension;
+    }
+
+    // If it's a sass file and the compiler is off, try finding the compiled css file.
+    if (!theme_get_setting('sasson_sass') && in_array($extension, array('scss', 'sass'))) {
+      global $theme_key;
+      if (empty($item['theme'])) {
+        $item['theme'] = $theme_key;
+      }
+      $path = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/css/';
+      $fileinfo = pathinfo($data);
+      if (theme_get_setting('sasson_compiler_destination') && file_exists($file = theme_get_setting('sasson_compiler_destination') . '/' . $item['theme'] . '/styles/' . $fileinfo['filename'] . '.css')) {
+        $data = $item['data'] = $file;
+      }
+      elseif (file_exists($file = $path . $fileinfo['filename'] . '.css')) {
+        $data = $item['data'] = $file;
+      }
+    }
+
+    // Include direction-specific stylesheets
     if ($item['type'] == 'file') {
       $path_parts = pathinfo($item['data']);
       if (!empty($path_parts['extension'])) {
@@ -41,16 +73,17 @@ function sasson_css_alter(&$css) {
         }
         // If the current language is RTL, add the sass/scss file with the RTL overrides.
         // Core already takes care of RTL css files.
-        elseif ($language->direction == LANGUAGE_RTL && ($extens == ".scss" || $extens == ".sass")) {
+        elseif ($language->direction == LANGUAGE_RTL && !empty($item['syntax']) && in_array($item['syntax'], array('scss', 'sass'))) {
           $dir_path = str_replace($extens, "-rtl{$extens}", $item['data']);
         }
         // If the file exists, add the file with the dir (LTR/RTL) overrides.
         if (isset($dir_path) && file_exists($dir_path) && !isset($css[$dir_path])) {
           // Replicate the same item, but with the dir (RTL/LTR) path and a little larger
           // weight so that it appears directly after the original CSS file.
-          $item['data'] = $dir_path;
-          $item['weight'] += 0.0001;
-          $css[$dir_path] = $item;
+          $newitem = $item;
+          $newitem['data'] = $dir_path;
+          $newitem['weight'] += 0.0001;
+          $css[$dir_path] = $newitem;
         }
       }
     }
@@ -87,21 +120,9 @@ function sasson_css_include() {
 
     if (isset($info['styles']) && !empty($info['styles'])) {
       foreach ($info['styles'] as $file => $style) {
-        $extension = drupal_substr($file, -5);
-        if (!theme_get_setting('sasson_sass') && in_array($extension, array('.scss', '.sass'))) {
-          // If it's a sass file and the compiler is off, try finding the compiled css file.
-          $path = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/css/';
-          $fileinfo = pathinfo($file);
-          if (file_exists($file = drupal_get_path('theme', $theme->name) . '/' . str_replace($extension, '.css', $file))) {
-            drupal_add_css($file, $style['options']);
-          }
-          elseif (file_exists($file = $path . $fileinfo['filename'] . '.css')) {
-            drupal_add_css($file, $style['options']);
-          }
-        }
-        elseif (file_exists($file = drupal_get_path('theme', $theme->name) . "/{$file}")) {
+          $file = drupal_get_path('theme', $theme->name) . "/{$file}";
+          $style['options']['theme'] = $theme->name;
           drupal_add_css($file, $style['options']);
-        }
       }
     }
   }
@@ -203,8 +224,8 @@ function sasson_preprocess_html(&$vars) {
       '#type' => 'html_tag',
       '#tag' => 'meta',
       '#attributes' => array(
-        'content' =>  'width=device-width',
         'name' => 'viewport',
+        'content' =>  'width=device-width',
       )
     );
     drupal_add_html_head($mobile_viewport, 'mobile_viewport');
@@ -225,21 +246,10 @@ function sasson_preprocess_html(&$vars) {
     }
   }
 
-  // Keyboard shortcut to recompile Sass and sprites
-  // ToDo: Remove the admin-menu dependency
-  if (theme_get_setting('sasson_devel') && module_exists('admin_menu')) {
+  // Keyboard shortcut to recompile Sass
+  if (theme_get_setting('sasson_sass') && theme_get_setting('sasson_devel') && user_access('administer themes') && !theme_get_setting('sasson_disable_sasson_js')) {
     $inline_code = 'jQuery(document).bind("keydown", "alt+c", function() {
-      var href = jQuery(\'#admin-menu a[href*="flush-cache/assets"]\').attr("href");
-      if (typeof href === "undefined") {
-        // Support older versions of admin-menu
-        href = jQuery(\'#admin-menu a[href*="flush-cache?"]\').attr("href");
-      }
-      if (typeof href !== "undefined") {
-        window.location.href = href;
-      }
-      else {
-        log("Could not find the path to clear cache");
-      }
+      window.location.href = "//" + window.location.host + window.location.pathname + "?recompile=true"
     });';
     drupal_add_js(drupal_get_path('theme', 'sasson') . '/scripts/jquery.hotkeys.js');
     drupal_add_js($inline_code,
@@ -270,11 +280,11 @@ function sasson_preprocess_html(&$vars) {
   }
 
   if (theme_get_setting('sasson_show_grid')) {
-    $vars['classes_array'][] = 'show-grid';
+    $vars['classes_array'][] = 'grid-background';
   }
 
   if (theme_get_setting('sasson_overlay') && theme_get_setting('sasson_overlay_url')) {
-    $vars['classes_array'][] = 'show-overlay';
+    $vars['classes_array'][] = 'with-overlay';
     drupal_add_library('system', 'ui');
     drupal_add_library('system', 'ui.widget');
     drupal_add_library('system', 'ui.mouse');

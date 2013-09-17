@@ -29,7 +29,6 @@ function sasson_sasson_alter(&$data, $theme_name) {
     '[font-selectors]' => theme_get_setting('sasson_font_selectors') ? theme_get_setting('sasson_font_selectors') : '.sasson-font-face',
     // Overlay image
     '[overlay]' => theme_get_setting('sasson_overlay') == 1 ? '1' : '0',
-    '[overlay-opacity]' => theme_get_setting('sasson_overlay_opacity'),
   );
 
   $data = str_replace(array_keys($variables), $variables, $data);
@@ -54,11 +53,12 @@ function sasson_flip($match) {
   $fname = trim($fname, '"\'');
 
   $pp = explode("/", $fname);
+  $tname = reset($pp);
   $last = end($pp);
   $fp = explode(".", $last);
   $name = $fp[0];
   $ext = $fp[1];
-  $directory = 'public://css';
+  $directory = theme_get_setting('sasson_compiler_destination') && !empty($tname) ? theme_get_setting('sasson_compiler_destination') . '/' . $tname . '/styles' : 'public://css';
   // If it's scss file, lets check for the compile css file in the public files directory.
   if ($ext == 'scss' || $ext == 'sass') {
     $path = "{$directory}/{$name}.css" ;

@@ -1,6 +1,28 @@
 Sasson 7.x-2.x-dev (development release)
 ---------------------------
 
+Sasson 7.x-2.10, 2013-05-21
+---------------------------
+- Improved file watcher
+- Improved flipper
+- Allow toggling of CSS URL rewrite
+-
+
+Sasson 7.x-2.9, 2013-01-04
+---------------------------
+- Allow setting of compiled CSS destination via theme settings.
+- Allow turning off of auto CSS3 prefixer.
+- Add example preprocess hook to template.php
+
+Sasson 7.x-2.8, 2012-12-01
+---------------------------
+- Improved grid-background & image overlay (backported from v3.x).
+- alt+c to recompile Sass doesn't depend on admin_menu anymore.
+- Better handling of previously compiled CSS files when the compiler is off.
+- Unite CSS_SYSTEM & CSS_DEFAULT aggregation groups to cut on http requests
+- Backported fileWatcher from v3.x
+- Improved drush sns script
+- Use <link> tags for theme stylesheets instead of @import when developing
 
 Sasson 7.x-2.7, 2012-10-18
 ---------------------------

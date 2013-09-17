@@ -27,6 +27,7 @@ $sidebar-second: [sidebar-second];
 @import "compass/css3";
 @import "960/grid";
 @import "partials/clear";
+@import "partials/grid-background";
 
 @if [responsive] {
 
@@ -117,26 +118,6 @@ $sidebar-second: [sidebar-second];
 }
 
 
-@if [overlay] {
-
-  // ==== Design Overlay. =============================================
-  //   Overlay a draggable image over the design for visual comparison
-  // ==================================================================
-  body.show-overlay #overlay {
-    position: absolute;
-    z-index: 99;
-    text-align: center;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: move;
-    opacity: [overlay-opacity];
-  }
-
-}
-
-
 @if [show-grid] + [overlay] > 0 {
 
   // ==== Grid Background. =========================================
@@ -144,9 +125,8 @@ $sidebar-second: [sidebar-second];
   // ===============================================================
   $space : $ninesixty-gutter-width / 2;
   $column: $ninesixty-grid-width / $ninesixty-columns - $space;
-  body.show-grid #page {
-    @include linear-gradient(color-stops(#e6ffa8 $space, #ccea7e $space, #bbd673 $column, #e6ffa8 $column, #e6ffa8 $column + $space), left);
-    background-size: 100% / $ninesixty-columns;
+  #page.grid-background {
+    @include grid-background;
   }
 
   // Grid toggle switch

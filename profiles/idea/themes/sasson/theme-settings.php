@@ -200,6 +200,35 @@ function sasson_form_system_theme_settings_alter(&$form, &$form_state) {
     '#description' => t('SASS Development - Output unminified sass for better readability and add !firesass support. WARNING: css output is way bigger, use only while in development.', array('!firesass' => '<a target="blank" href="https://addons.mozilla.org/en-US/firefox/addon/firesass-for-firebug/">FireSass</a>')),
     '#default_value' => theme_get_setting('sasson_devel'),
   );
+  $form['sasson_settings']['sasson_sass']['sasson_prefix'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Auto prefix CSS3 properties'),
+    '#description' => t('Automatically add vendor prefixes to CSS3 properties. Disable if using compass mixins for CSS3.'),
+    '#default_value' => theme_get_setting('sasson_prefix'),
+  );
+
+  $files_directory = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/css';
+  $form['sasson_settings']['sasson_sass']['sasson_compiled_path'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Compiled files path'),
+  );
+  $form['sasson_settings']['sasson_sass']['sasson_compiled_path']['description'] = array(
+    '#markup' => '<div class="description">' . t('Set the path to where you would like compiled files to be stored. defaults to <code>!files</code>', array('!files' => $files_directory)) . '</br>' .
+    t('Compiled files will be stored in a sub-directory with the theme name so entering the path to your themes directory here will place the copiled files in the <code>/styles/</code> directory under each theme\'s directory.') . '</div>',
+  );
+  $form['sasson_settings']['sasson_sass']['sasson_compiled_path']['sasson_compiler_destination'] = array(
+    '#type' => 'textfield',
+    '#attributes' => array(
+      'placeholder' => t('e.g.') . ' sites/all/themes',
+    ),
+    '#default_value' => theme_get_setting('sasson_compiler_destination'),
+  );
+  $form['sasson_settings']['sasson_sass']['sasson_compiled_path']['sasson_url_rewrite'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Rewrite URLs.'),
+    '#description' => t('Anchor all paths in the CSS with its base URL, ignoring external, absolute paths, and compass url helper functions. You may disable this feature depending on the path to your generated CSS.'),
+    '#default_value' => theme_get_setting('sasson_url_rewrite'),
+  );
 
   $form['sasson_settings']['sasson_sass']['sasson_url_helpers'] = array(
     '#type' => 'fieldset',

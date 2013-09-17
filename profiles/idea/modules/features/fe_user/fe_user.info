@@ -44,9 +44,9 @@ features[views_view][] = "my_commented_ideas"
 features[views_view][] = "my_voted_ideas"
 features[views_view][] = "user_ideas"
 
-; Information added by drupal.org packaging script on 2012-10-19
-version = "7.x-1.0-beta9"
+; Information added by drupal.org packaging script on 2013-09-12
+version = "7.x-1.0-beta10"
 core = "7.x"
 project = "idea"
-datestamp = "1350631927"
+datestamp = "1378989137"
 
