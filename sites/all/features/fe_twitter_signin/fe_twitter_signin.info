@@ -1,0 +1,10 @@
+name = Twitter signin
+description = Allow users to sign in with their Twitter accounts
+core = 7.x
+package = Features
+dependencies[] = oauth_common
+dependencies[] = strongarm
+dependencies[] = twitter_signin
+features[ctools][] = strongarm:strongarm:1
+features[features_api][] = api:1
+features[variable][] = twitter_signin_button

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Twitter signin feature.
+ */
+
+include_once 'fe_twitter_signin.features.inc';
